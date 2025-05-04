@@ -1,0 +1,127 @@
+package com.crashero.cart.adapters.out.persistance;
+
+import com.crashero.core.service.CartPort;
+import com.crashero.model.Cart;
+import com.crashero.model.CartItem;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+@RequiredArgsConstructor
+@Component
+public class CartRepository implements CartPort {
+    private final SpringDataCartRepository cartRepository;
+
+    @Override
+    public Cart save(Cart cart) {
+        CartEntity cartEntity = toEntity(cart);
+
+        if (cartEntity.getItems() != null) {
+            cartEntity.getItems().forEach(item -> item.setCart(cartEntity));
+        }
+
+        CartEntity saved = cartRepository.save(cartEntity);
+        return toDomain(saved);
+    }
+
+    @Override
+    public Optional<Cart> findById(Long id) {
+        return cartRepository.findById(id)
+                .map(this::toDomain);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        cartRepository.deleteById(id);
+    }
+
+    public List<Cart> findAll() {
+        return cartRepository.findAll()
+                .stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
+    public Optional<Cart> findByUserId(Long userId) {
+        return cartRepository.findByUserId(userId)
+                .map(this::toDomain);
+    }
+
+    private CartEntity toEntity(Cart cart) {
+        if (cart == null) {
+            return null;
+        }
+
+        CartEntity entity = new CartEntity();
+        entity.setId(cart.getId());
+        entity.setUserId(cart.getUserId());
+
+        if (cart.getItems() != null) {
+            List<CartItemEntity> itemEntities = new ArrayList<>();
+            for (CartItem item : cart.getItems()) {
+                CartItemEntity itemEntity = toEntity(item);
+                itemEntities.add(itemEntity);
+            }
+            entity.setItems(itemEntities);
+        } else {
+            entity.setItems(null);
+        }
+
+        return entity;
+    }
+
+    private CartItemEntity toEntity(CartItem item) {
+        if (item == null) {
+            return null;
+        }
+
+        CartItemEntity entity = new CartItemEntity();
+        entity.setId(item.getId());
+        entity.setProductId(item.getProductId());
+        entity.setProductName(item.getProductName());
+        entity.setQuantity(item.getQuantity());
+        entity.setPrice(item.getPrice());
+        return entity;
+    }
+
+    private Cart toDomain(CartEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+
+        Cart cart = new Cart();
+        cart.setId(entity.getId());
+        cart.setUserId(entity.getUserId());
+
+        if (entity.getItems() != null) {
+            List<CartItem> items = new ArrayList<>();
+            for (CartItemEntity itemEntity : entity.getItems()) {
+                CartItem item = toDomain(itemEntity);
+                items.add(item);
+            }
+            cart.setItems(items);
+        } else {
+            cart.setItems(null);
+        }
+
+        return cart;
+    }
+
+    private CartItem toDomain(CartItemEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+
+        CartItem item = new CartItem();
+        item.setId(entity.getId());
+        item.setProductId(entity.getProductId());
+        item.setPrice(entity.getPrice());
+        item.setProductName(entity.getProductName());
+        item.setQuantity(entity.getQuantity());
+        return item;
+    }
+}
