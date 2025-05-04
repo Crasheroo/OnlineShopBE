@@ -6,7 +6,6 @@ import com.crashero.model.Invoice;
 import com.crashero.model.Order;
 import com.crashero.model.OrderItem;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,18 +13,18 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(OrderController.class)
 public class OrderControllerTest {
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -35,68 +34,71 @@ public class OrderControllerTest {
     @MockitoBean
     private InvoiceService invoiceService;
 
+    @Autowired
     private ObjectMapper objectMapper;
-    private Order sampleOrder;
-    private Invoice sampleInvoice;
-
-    @BeforeEach
-    void setUp() {
-        objectMapper = new ObjectMapper();
-        sampleOrder = new Order();
-        sampleOrder.setId(1L);
-        sampleOrder.setUserId(10L);
-
-        sampleInvoice = new Invoice();
-        sampleInvoice.setId(1L);
-        sampleInvoice.setUserId(10L);
-    }
 
     @Test
-    void shouldCreateOrder() throws Exception {
-        List<OrderItem> items = List.of(new OrderItem(1L, "Test Product", 2, 99.99));
-        Mockito.when(orderService.createOrder(eq(10L), any())).thenReturn(sampleOrder);
+    void testCreateOrder() throws Exception {
+        Long userId = 1L;
+        List<OrderItem> items = Collections.emptyList();
+        Order mockOrder = new Order();
+        mockOrder.setId(100L);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/orders/10")
+        Mockito.when(orderService.createOrder(eq(userId), any())).thenReturn(mockOrder);
+
+        mockMvc.perform(post("/orders/{userId}", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(items)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L));
+                .andExpect(jsonPath("$.id").value(100L));
     }
 
     @Test
-    void shouldGetOrdersForUser() throws Exception {
-        Mockito.when(orderService.getOrders(10L)).thenReturn(List.of(sampleOrder));
+    void testGetOrdersByUserId() throws Exception {
+        Long userId = 1L;
+        Order mockOrder = new Order();
+        mockOrder.setUserId(userId);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/orders/user/10"))
+        Mockito.when(orderService.getOrders(userId)).thenReturn(List.of(mockOrder));
+
+        mockMvc.perform(get("/orders/user/{userId}", userId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id").value(1L));
+                .andExpect(jsonPath("$[0].userId").value(userId));
     }
 
     @Test
-    void shouldGetOrderById() throws Exception {
-        Mockito.when(orderService.findOrderById(1L)).thenReturn(sampleOrder);
+    void testGetOrderById() throws Exception {
+        Order mockOrder = new Order();
+        mockOrder.setId(200L);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/orders/1"))
+        Mockito.when(orderService.findOrderById(200L)).thenReturn(mockOrder);
+
+        mockMvc.perform(get("/orders/200"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L));
+                .andExpect(jsonPath("$.id").value(200L));
     }
 
     @Test
-    void shouldGetInvoicesByUserId() throws Exception {
-        Mockito.when(invoiceService.getInvoicesByUserId(10L)).thenReturn(List.of(sampleInvoice));
+    void testGetInvoicesByUserId() throws Exception {
+        Invoice mockInvoice = new Invoice();
+        mockInvoice.setUserId(10L);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/orders/invoice/10"))
+        Mockito.when(invoiceService.getInvoicesByUserId(10L)).thenReturn(List.of(mockInvoice));
+
+        mockMvc.perform(get("/orders/invoice/10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1L));
+                .andExpect(jsonPath("$[0].userId").value(10L));
     }
 
     @Test
-    void shouldGetSingleInvoiceByUserId() throws Exception {
-        Mockito.when(invoiceService.getInvoiceById(10L)).thenReturn(sampleInvoice);
+    void testGetInvoiceByUserId() throws Exception {
+        Invoice mockInvoice = new Invoice();
+        mockInvoice.setUserId(10L);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/orders/invoice/user/10"))
+        Mockito.when(invoiceService.getInvoiceById(10L)).thenReturn(mockInvoice);
+
+        mockMvc.perform(get("/orders/invoice/user/10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L));
+                .andExpect(jsonPath("$.userId").value(10L));
     }
 }
