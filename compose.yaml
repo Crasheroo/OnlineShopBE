@@ -1,0 +1,119 @@
+services:
+  pgadmin:
+    image: elestio/pgadmin:latest
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@email.com
+      PGADMIN_DEFAULT_PASSWORD: password
+      PGADMIN_LISTEN_PORT: 1234
+    ports:
+      - "1234:1234"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - onlineshop-network
+
+  postgres:
+    image: postgres:latest
+    container_name: onlineshop-db
+    environment:
+      POSTGRES_DB: onlineshop
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - onlineshop-network
+    restart: always
+
+  cart-service:
+    build:
+      context: ./cart-service
+      dockerfile: Dockerfile
+    container_name: cart-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://onlineshop-db:5432/onlineshop
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - PRODUCT_SERVICE_URL=http://product-service:8081
+      - SERVER_PORT=8080
+      - SPRING_PROFILES_ACTIVE=docker
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - product-service
+    networks:
+      - onlineshop-network
+
+  product-service:
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
+    container_name: product-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://onlineshop-db:5432/onlineshop
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SERVER_PORT=8081
+      - SPRING_PROFILES_ACTIVE=docker
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres
+    networks:
+      - onlineshop-network
+
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: order-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://onlineshop-db:5432/onlineshop
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - CART_SERVICE_URL=http://cart-service:8080
+      - PRODUCT_SERVICE_URL=http://product-service:8081
+      - SERVER_PORT=8082
+      - SPRING_PROFILES_ACTIVE=docker
+    ports:
+      - "8082:8082"
+    depends_on:
+      - postgres
+      - product-service
+      - cart-service
+    networks:
+      - onlineshop-network
+
+  user-service:
+    build:
+      context: .
+      dockerfile: user-service/Dockerfile
+    container_name: user-service
+    environment:
+      - CART_SERVICE_URL=http://cart-service:8080
+      - PRODUCT_SERVICE_URL=http://product-service:8081
+      - ORDER_SERVICE_URL=http://order-service:8082
+      - SERVER_PORT=8083
+      - SPRING_PROFILES_ACTIVE=docker
+    ports:
+      - "8083:8083"
+    depends_on:
+      - cart-service
+      - product-service
+      - order-service
+    networks:
+      - onlineshop-network
+
+networks:
+  onlineshop-network:
+
+volumes:
+  postgres_data:
+  pgadmin_data:
