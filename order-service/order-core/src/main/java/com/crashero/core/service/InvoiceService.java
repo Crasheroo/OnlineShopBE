@@ -1,10 +1,9 @@
 package com.crashero.core.service;
 
-import com.crashero.common.exception.OrderException;
 import com.crashero.model.Invoice;
 import com.crashero.model.Order;
+import com.crashero.model.exception.OrderException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,7 +12,7 @@ import java.util.List;
 public class InvoiceService {
     private final InvoicePort invoicePort;
 
-    public Invoice generateInvoice(Order order) {
+    public void generateInvoice(Order order) {
         Invoice build = Invoice.builder()
                 .orderId(order.getId())
                 .userId(order.getUserId())
@@ -21,7 +20,7 @@ public class InvoiceService {
                 .issuedAt(LocalDateTime.now())
                 .build();
 
-        return invoicePort.save(build);
+        invoicePort.save(build);
     }
 
     public List<Invoice> getInvoicesByUserId(Long userId) {
@@ -30,6 +29,6 @@ public class InvoiceService {
 
     public Invoice getInvoiceById(Long id) {
         return invoicePort.findById(id)
-                .orElseThrow(() -> new OrderException("Invoice not found", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new OrderException("Invoice not found"));
     }
 }

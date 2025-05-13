@@ -5,6 +5,7 @@ import com.crashero.model.Product;
 import com.crashero.user.adapters.out.ProductClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -12,7 +13,7 @@ public class ProductClientFallback implements ProductClient {
     private static final Logger log = LoggerFactory.getLogger(ProductClientFallback.class);
 
     @Override
-    public PageableContentDTO<Product> getProducts() {
+    public PageableContentDTO<Product> getProducts(Pageable pageable) {
         log.error("getProducts called");
         throw new RuntimeException("Falling back to getProducts");
     }

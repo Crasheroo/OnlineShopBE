@@ -1,16 +1,15 @@
 package com.crashero.core.service;
 
-import com.crashero.common.exception.ProductException;
 import com.crashero.model.Product;
 import com.crashero.model.ProductType;
 import com.crashero.model.configuration.ComputerConfiguration;
 import com.crashero.model.configuration.SmartphoneConfiguration;
+import com.crashero.model.exception.ProductException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +34,7 @@ public class ProductServiceTest {
 
         Object config = productService.getProductConfiguration(1L);
 
-        assertTrue(config instanceof SmartphoneConfiguration);
+        assertInstanceOf(SmartphoneConfiguration.class, config);
     }
 
     @Test
@@ -45,7 +44,7 @@ public class ProductServiceTest {
 
         Object config = productService.getProductConfiguration(2L);
 
-        assertTrue(config instanceof ComputerConfiguration);
+        assertInstanceOf(ComputerConfiguration.class, config);
     }
 
     @Test
@@ -53,12 +52,9 @@ public class ProductServiceTest {
         Product invalid = Product.builder().id(3L).type(ProductType.ELECTRONICS).build();
         when(productPort.findById(3L)).thenReturn(Optional.of(invalid));
 
-        ProductException exception = assertThrows(ProductException.class, () -> {
-            productService.getProductConfiguration(3L);
-        });
+        ProductException exception = assertThrows(ProductException.class, () -> productService.getProductConfiguration(3L));
 
         assertEquals("Product of type ELECTRONICS does not have configurable options.", exception.getMessage());
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
     }
 
     @Test
@@ -85,12 +81,9 @@ public class ProductServiceTest {
     void shouldThrowWhenProductNotFound() {
         when(productPort.findById(99L)).thenReturn(Optional.empty());
 
-        ProductException exception = assertThrows(ProductException.class, () -> {
-            productService.getProductById(99L);
-        });
+        ProductException exception = assertThrows(ProductException.class, () -> productService.getProductById(99L));
 
         assertEquals("Product not found", exception.getMessage());
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
     }
 
     @Test

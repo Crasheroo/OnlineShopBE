@@ -19,6 +19,6 @@ public class CartEntity {
     @Column(name = "user_id", nullable = false, unique = true)
     private Long userId;
 
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<CartItemEntity> items;
 }

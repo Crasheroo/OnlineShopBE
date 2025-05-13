@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
@@ -35,10 +36,13 @@ public class ProductController {
         return productService.createProduct(product);
     }
 
-    @Operation(summary = "Get product by it's productId")
-    @ApiResponse(responseCode = "200", description = "Product found",
-            content = {@Content(mediaType = "application/json",
-                    schema = @Schema(implementation = Product.class))})
+    @Operation(summary = "Get product by its id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product found",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Product.class))}),
+            @ApiResponse(responseCode = "500", description = "Product not found")
+    })
     @GetMapping("/{id}")
     public Product getProduct(@PathVariable("id") Long id) {
         return productService.getProductById(id);

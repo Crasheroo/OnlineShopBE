@@ -1,10 +1,9 @@
 package com.crashero.core.service;
 
-import com.crashero.common.exception.OrderException;
+import com.crashero.model.exception.OrderException;
 import com.crashero.model.Order;
 import com.crashero.model.OrderItem;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
@@ -35,6 +34,6 @@ public class OrderService {
     }
 
     public Order findOrderById(Long id) {
-        return orderPort.findById(id).orElseThrow(() -> new OrderException("Order not found", HttpStatus.NOT_FOUND));
+        return orderPort.findById(id).orElseThrow(() -> new OrderException("Order not found"));
     }
 }

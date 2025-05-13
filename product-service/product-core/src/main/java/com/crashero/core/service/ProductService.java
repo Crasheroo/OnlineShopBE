@@ -1,14 +1,13 @@
 package com.crashero.core.service;
 
-import com.crashero.common.exception.ProductException;
 import com.crashero.model.PageableContentDTO;
 import com.crashero.model.Product;
 import com.crashero.model.ProductType;
 import com.crashero.model.configuration.ComputerConfiguration;
 import com.crashero.model.configuration.SmartphoneConfiguration;
+import com.crashero.model.exception.ProductException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
@@ -34,7 +33,7 @@ public class ProductService {
                     .availableAccessories(List.of("Earphones", "Case", "Screen Protector"))
                     .build();
         } else {
-            throw new ProductException("Product of type ELECTRONICS does not have configurable options.", HttpStatus.BAD_REQUEST);
+            throw new ProductException("Product of type ELECTRONICS does not have configurable options.");
         }
     }
 
@@ -43,7 +42,7 @@ public class ProductService {
     }
 
     public Product getProductById(Long id) {
-        return productPort.findById(id).orElseThrow(() -> new ProductException("Product not found", HttpStatus.NOT_FOUND));
+        return productPort.findById(id).orElseThrow(() -> new ProductException("Product not found"));
     }
 
     public PageableContentDTO<Product> getAllProducts(Pageable pageable) {
@@ -59,7 +58,7 @@ public class ProductService {
 
     public Product updateProduct(Long productId, Product updatedData) {
         Product product = productPort.findById(productId)
-                .orElseThrow(() -> new ProductException("Product not found", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ProductException("Product not found"));
 
         product.setProductName(updatedData.getProductName());
         product.setPrice(updatedData.getPrice());

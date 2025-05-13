@@ -18,7 +18,7 @@ public class OrderEntity {
     private Long id;
     private Long userId;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "order_id")
     private List<OrderItemEntity> items;
     private Double totalAmount;

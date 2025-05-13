@@ -5,6 +5,7 @@ import com.crashero.core.service.OrderService;
 import com.crashero.model.Invoice;
 import com.crashero.model.Order;
 import com.crashero.model.OrderItem;
+import com.crashero.model.exception.OrderException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -100,5 +101,50 @@ public class OrderControllerTest {
         mockMvc.perform(get("/orders/invoice/user/10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userId").value(10L));
+    }
+
+    @Test
+    void testGetOrdersByUserId_NotFound_ReturnsEmptyList() throws Exception {
+        Long userId = 999L;
+
+        Mockito.when(orderService.getOrders(userId)).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/orders/user/{userId}", userId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void testGetOrderById_NotFound_Returns404() throws Exception {
+        Long orderId = 999L;
+
+        Mockito.when(orderService.findOrderById(orderId))
+                .thenThrow(new OrderException("Order not found"));
+
+        mockMvc.perform(get("/orders/{id}", orderId))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void testGetInvoicesByUserId_EmptyResult_ReturnsEmptyList() throws Exception {
+        Long userId = 999L;
+
+        Mockito.when(invoiceService.getInvoicesByUserId(userId))
+                .thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/orders/invoice/{userId}", userId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void testGetInvoiceByUserId_NotFound_Returns404() throws Exception {
+        Long userId = 999L;
+
+        Mockito.when(invoiceService.getInvoiceById(userId))
+                .thenThrow(new OrderException("Invoice not found"));
+
+        mockMvc.perform(get("/orders/invoice/user/{userId}", userId))
+                .andExpect(status().isConflict());
     }
 }

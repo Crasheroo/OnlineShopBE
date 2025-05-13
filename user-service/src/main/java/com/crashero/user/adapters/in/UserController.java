@@ -6,8 +6,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,8 +25,8 @@ public class UserController {
     @Operation(summary = "Get all products")
     @ApiResponse(responseCode = "200", description = "Products found")
     @GetMapping("/products")
-    public PageableContentDTO<Product> browseProducts() {
-        return userService.browseProducts();
+    public PageableContentDTO<Product> browseProducts(@ParameterObject Pageable pageable) {
+        return userService.browseProducts(pageable);
     }
 
     @Operation(summary = "Add product to cart and create the cart if not found")
@@ -66,9 +69,13 @@ public class UserController {
     }
 
     @Operation(summary = "Get product by its id")
-    @ApiResponse(responseCode = "200", description = "Product found",
-            content = {@Content(mediaType = "application/json",
-                    schema = @Schema(implementation = Product.class))})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product found",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Product.class))}),
+            @ApiResponse(responseCode = "500", description = "Product not found"
+            )
+    })
     @GetMapping("/products/{id}")
     public Product getProductById(@PathVariable("id") Long id) {
         return userService.getProductById(id);

@@ -1,11 +1,11 @@
 package com.crashero.user.core;
 
-import com.crashero.common.exception.CartException;
 import com.crashero.model.*;
+import com.crashero.model.exception.CartException;
 import com.crashero.user.adapters.out.CartClient;
 import com.crashero.user.adapters.out.OrderClient;
 import com.crashero.user.adapters.out.ProductClient;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,8 +22,8 @@ public class UserService {
         this.orderClient = orderClient;
     }
 
-    public PageableContentDTO<Product> browseProducts() {
-        return productClient.getProducts();
+    public PageableContentDTO<Product> browseProducts(Pageable pageable) {
+        return productClient.getProducts(pageable);
     }
 
     public void addToCart(AddProductToCartCommand command) {
@@ -47,7 +47,7 @@ public class UserService {
         Cart cart = cartClient.getCart(cartId);
 
         if (!cart.getUserId().equals(userId)) {
-            throw new CartException("Cart does not belong to user!", HttpStatus.CONFLICT);
+            throw new CartException("Cart does not belong to user!");
         }
 
         List<OrderItem> orderItems = cart.getItems().stream()

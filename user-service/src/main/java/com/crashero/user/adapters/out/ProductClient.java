@@ -5,6 +5,7 @@ import com.crashero.model.Product;
 import com.crashero.user.config.FeignConfig;
 import com.crashero.user.config.ProductClientFallback;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface ProductClient {
 
     @GetMapping("/products")
-    PageableContentDTO<Product> getProducts();
+    PageableContentDTO<Product> getProducts(Pageable pageable);
 
     @GetMapping("/products/{id}/configuration")
     Object getProductConfiguration(@PathVariable("id") Long id);

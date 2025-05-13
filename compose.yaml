@@ -29,9 +29,7 @@ services:
     restart: always
 
   cart-service:
-    build:
-      context: ./cart-service
-      dockerfile: Dockerfile
+    image: cart-service:latest
     container_name: cart-service
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://onlineshop-db:5432/onlineshop
@@ -50,9 +48,7 @@ services:
       - onlineshop-network
 
   product-service:
-    build:
-      context: ./product-service
-      dockerfile: Dockerfile
+    image: product-service:latest
     container_name: product-service
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://onlineshop-db:5432/onlineshop
@@ -69,9 +65,7 @@ services:
       - onlineshop-network
 
   order-service:
-    build:
-      context: ./order-service
-      dockerfile: Dockerfile
+    image: order-service:latest
     container_name: order-service
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://onlineshop-db:5432/onlineshop
@@ -92,9 +86,7 @@ services:
       - onlineshop-network
 
   user-service:
-    build:
-      context: .
-      dockerfile: user-service/Dockerfile
+    image: user-service:latest
     container_name: user-service
     environment:
       - CART_SERVICE_URL=http://cart-service:8080

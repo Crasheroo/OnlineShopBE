@@ -4,6 +4,7 @@ import com.crashero.core.service.ProductService;
 import com.crashero.model.Product;
 import com.crashero.model.ProductType;
 import com.crashero.model.configuration.CreateProductCommand;
+import com.crashero.model.exception.ProductException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -14,6 +15,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -68,15 +70,6 @@ public class ProductControllerTest {
     }
 
     @Test
-    void testGetProductConfiguration() throws Exception {
-        Object config = new Object();
-        Mockito.when(productService.getProductConfiguration(1L)).thenReturn(config);
-
-        mockMvc.perform(get("/products/1/configuration"))
-                .andExpect(status().isOk());
-    }
-
-    @Test
     void testUpdateProduct() throws Exception {
         Product updatedProduct = Product.builder().id(1L).productName("Updated Phone").build();
         Mockito.when(productService.updateProduct(eq(1L), any(Product.class)))
@@ -87,5 +80,41 @@ public class ProductControllerTest {
                         .content(objectMapper.writeValueAsString(updatedProduct)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.productName").value("Updated Phone"));
+    }
+
+    @Test
+    void testGetProductById_NotFound_ShouldReturn409() throws Exception {
+        Long invalidProductId = 999L;
+
+        doThrow(new ProductException("Product not found")).when(productService).getProductById(invalidProductId);
+
+        mockMvc.perform(get("/products/{id}", invalidProductId))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void testDeleteProduct_NotFound_ShouldReturn409() throws Exception {
+        Long invalidProductId = 999L;
+
+        doThrow(new ProductException("Product not found")).when(productService).deleteProduct(invalidProductId);
+
+        mockMvc.perform(delete("/products/{id}", invalidProductId))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void testUpdateProduct_NotFound_ShouldReturn409() throws Exception {
+        Long productId = 999L;
+        Product updatedProduct = Product.builder()
+                .id(productId)
+                .productName("Updated Product")
+                .build();
+
+        doThrow(new ProductException("Product not found")).when(productService).updateProduct(eq(productId), any(Product.class));
+
+        mockMvc.perform(patch("/products/{productId}/update", productId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedProduct)))
+                .andExpect(status().isConflict());
     }
 }

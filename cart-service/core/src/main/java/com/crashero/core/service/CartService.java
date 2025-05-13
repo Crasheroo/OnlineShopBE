@@ -1,10 +1,9 @@
 package com.crashero.core.service;
 
-import com.crashero.common.exception.CartException;
 import com.crashero.model.AddProductToCart;
 import com.crashero.model.Cart;
 import com.crashero.model.CartItem;
-import org.springframework.http.HttpStatus;
+import com.crashero.model.exception.CartException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,12 +25,12 @@ public class CartService {
 
     public Cart getCart(Long cartId) {
         return cartPort.findById(cartId)
-                .orElseThrow(() -> new CartException("Cart not found", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CartException("Cart not found"));
     }
 
     public Cart getCartByUserId(Long userId) {
         return cartPort.findByUserId(userId)
-                .orElseThrow(() -> new CartException("Cart not found", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CartException("Cart not found"));
     }
 
     public void deleteCart(Long cartId) {
@@ -49,12 +48,16 @@ public class CartService {
                 .findFirst();
 
         existingItemOpt.ifPresentOrElse(
-                item -> item.setQuantity(item.getQuantity() + command.getQuantity()),
+                item -> {
+                    item.setQuantity(item.getQuantity() + command.getQuantity());
+                    item.setConfiguration(command.getConfiguration());
+                },
                 () -> items.add(CartItem.builder()
                         .productId(command.getProductId())
                         .productName(command.getProductName())
                         .quantity(command.getQuantity())
                         .price(command.getPrice())
+                        .configuration(command.getConfiguration())
                         .build())
         );
 

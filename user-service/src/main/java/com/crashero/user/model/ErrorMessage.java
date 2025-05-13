@@ -1,4 +1,4 @@
-package com.crashero.common.model;
+package com.crashero.user.model;
 
 import lombok.Builder;
 import org.springframework.http.HttpStatus;

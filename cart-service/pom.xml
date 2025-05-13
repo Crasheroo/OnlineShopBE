@@ -14,13 +14,6 @@
         <module>model</module>
         <module>adapters</module>
     </modules>
-    <dependencies>
-        <dependency>
-            <groupId>com.Crashero</groupId>
-            <artifactId>exception-handler</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-    </dependencies>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>

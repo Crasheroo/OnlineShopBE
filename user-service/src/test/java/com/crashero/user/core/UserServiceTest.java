@@ -1,7 +1,7 @@
 package com.crashero.user.core;
 
-import com.crashero.common.exception.CartException;
 import com.crashero.model.*;
+import com.crashero.model.exception.CartException;
 import com.crashero.user.adapters.out.CartClient;
 import com.crashero.user.adapters.out.OrderClient;
 import com.crashero.user.adapters.out.ProductClient;
@@ -54,8 +54,7 @@ public class UserServiceTest {
 
         assertThatThrownBy(() -> userService.checkout(1L, 3L))
                 .isInstanceOf(CartException.class)
-                .hasMessageContaining("Cart does not belong to user!")
-                .extracting("status").isEqualTo(HttpStatus.CONFLICT);
+                .hasMessageContaining("Cart does not belong to user!");
     }
 
 //    @Test
