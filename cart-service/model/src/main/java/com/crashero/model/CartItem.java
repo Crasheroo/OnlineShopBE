@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -15,12 +17,12 @@ public class CartItem {
     private String productName;
     private Integer quantity;
     private Double price;
-    private ProductConfigurationSelection configuration;
+    private List<SelectedConfiguration> selectedConfigurations;
+    private Double additionalPrice;
 
     public Double getTotalPrice() {
-        if (price == null || quantity == null) {
-            return 0.0;
-        }
-        return price * quantity;
+        double base = (price != null ? price : 0.0);
+        double extra = (additionalPrice != null ? additionalPrice : 0.0);
+        return (base + extra) * (quantity != null ? quantity : 1);
     }
 }

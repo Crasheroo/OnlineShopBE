@@ -7,7 +7,6 @@ import com.crashero.user.adapters.out.OrderClient;
 import com.crashero.user.adapters.out.ProductClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
@@ -20,13 +19,14 @@ public class UserServiceTest {
     private CartClient cartClient;
     private UserService userService;
     private OrderClient orderClient;
+    private KafkaSender kafkaSender;
 
     @BeforeEach
     public void setUp() {
         productClient = mock(ProductClient.class);
         cartClient = mock(CartClient.class);
         orderClient = mock(OrderClient.class);
-        userService = new UserService(productClient, cartClient, orderClient);
+        userService = new UserService(productClient, cartClient, orderClient, kafkaSender);
     }
 
 //    @Test
@@ -89,7 +89,7 @@ public class UserServiceTest {
         Cart cart = new Cart();
         when(cartClient.getCart(1L)).thenReturn(cart);
 
-        assertThat(userService.getCartById(1L)).isEqualTo(cart);
+        assertThat(userService.getCartByUserId(1L)).isEqualTo(cart);
     }
 
     @Test

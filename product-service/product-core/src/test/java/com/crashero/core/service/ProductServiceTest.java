@@ -1,9 +1,9 @@
 package com.crashero.core.service;
 
+import com.crashero.core.port.ProductConfigurationPort;
+import com.crashero.core.port.ProductPort;
 import com.crashero.model.Product;
 import com.crashero.model.ProductType;
-import com.crashero.model.configuration.ComputerConfiguration;
-import com.crashero.model.configuration.SmartphoneConfiguration;
 import com.crashero.model.exception.ProductException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,31 +20,12 @@ import static org.mockito.Mockito.*;
 public class ProductServiceTest {
     private ProductService productService;
     private ProductPort productPort;
+    private ProductConfigurationPort productConfigurationPort;
 
     @BeforeEach
     public void setUp() {
         productPort = mock(ProductPort.class);
-        productService = new ProductService(productPort);
-    }
-
-    @Test
-    void shouldReturnSmartphoneConfiguration() {
-        Product smartphone = Product.builder().id(1L).type(ProductType.SMARTPHONE).build();
-        when(productPort.findById(1L)).thenReturn(Optional.of(smartphone));
-
-        Object config = productService.getProductConfiguration(1L);
-
-        assertInstanceOf(SmartphoneConfiguration.class, config);
-    }
-
-    @Test
-    void shouldReturnComputerConfiguration() {
-        Product computer = Product.builder().id(2L).type(ProductType.COMPUTER).build();
-        when(productPort.findById(2L)).thenReturn(Optional.of(computer));
-
-        Object config = productService.getProductConfiguration(2L);
-
-        assertInstanceOf(ComputerConfiguration.class, config);
+        productService = new ProductService(productPort, productConfigurationPort);
     }
 
     @Test

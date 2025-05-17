@@ -74,7 +74,7 @@ public class UserControllerTest {
         Cart cart = new Cart();
         cart.setId(5L);
 
-        Mockito.when(userService.getCartById(5L)).thenReturn(cart);
+        Mockito.when(userService.getCartByUserId(5L)).thenReturn(cart);
 
         mockMvc.perform(get("/ui/carts/5"))
                 .andExpect(status().isOk())

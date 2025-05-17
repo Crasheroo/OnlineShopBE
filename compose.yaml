@@ -3,8 +3,8 @@ services:
     image: elestio/pgadmin:latest
     container_name: pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@email.com
-      PGADMIN_DEFAULT_PASSWORD: password
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
       PGADMIN_LISTEN_PORT: 1234
     ports:
       - "1234:1234"
@@ -17,9 +17,9 @@ services:
     image: postgres:latest
     container_name: onlineshop-db
     environment:
-      POSTGRES_DB: onlineshop
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -32,13 +32,13 @@ services:
     image: cart-service:latest
     container_name: cart-service
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://onlineshop-db:5432/onlineshop
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - PRODUCT_SERVICE_URL=http://product-service:8081
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://onlineshop-db:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=${SPRING_JPA_HIBERNATE_DDL_AUTO}
+      - PRODUCT_SERVICE_URL=${PRODUCT_SERVICE_URL}
       - SERVER_PORT=8080
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
     ports:
       - "8080:8080"
     depends_on:
@@ -51,12 +51,12 @@ services:
     image: product-service:latest
     container_name: product-service
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://onlineshop-db:5432/onlineshop
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://onlineshop-db:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=${SPRING_JPA_HIBERNATE_DDL_AUTO}
       - SERVER_PORT=8081
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
     ports:
       - "8081:8081"
     depends_on:
@@ -68,14 +68,14 @@ services:
     image: order-service:latest
     container_name: order-service
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://onlineshop-db:5432/onlineshop
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - CART_SERVICE_URL=http://cart-service:8080
-      - PRODUCT_SERVICE_URL=http://product-service:8081
-      - SERVER_PORT=8082
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://onlineshop-db:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=${SPRING_JPA_HIBERNATE_DDL_AUTO}
+      - PRODUCT_SERVICE_URL=${PRODUCT_SERVICE_URL}
+      - CART_SERVICE_URL=${CART_SERVICE_URL}
+      - SERVER_PORT=8081
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
     ports:
       - "8082:8082"
     depends_on:
@@ -89,11 +89,12 @@ services:
     image: user-service:latest
     container_name: user-service
     environment:
-      - CART_SERVICE_URL=http://cart-service:8080
-      - PRODUCT_SERVICE_URL=http://product-service:8081
-      - ORDER_SERVICE_URL=http://order-service:8082
+      - PRODUCT_SERVICE_URL=${PRODUCT_SERVICE_URL}
+      - CART_SERVICE_URL=${CART_SERVICE_URL}
+      - ORDER_SERVICE_URL=${ORDER_SERVICE_URL}
       - SERVER_PORT=8083
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
     ports:
       - "8083:8083"
     depends_on:
@@ -103,9 +104,90 @@ services:
     networks:
       - onlineshop-network
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.monitoring.collection.enabled=true
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - onlineshop-network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.0
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - xpack.security.enabled=false
+    networks:
+      - onlineshop-network
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.13.0
+    container_name: logstash
+    environment:
+      - LS_JAVA_OPTS=-Xms256m -Xmx256m
+    ports:
+      - "5050:5050"
+    volumes:
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    networks:
+      - onlineshop-network
+    depends_on:
+      - elasticsearch
+
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - onlineshop-network
+
+  akhq:
+    image: tchiotludo/akhq
+    restart: unless-stopped
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            docker-kafka-server:
+              properties:
+                bootstrap.servers: "kafka:9092"
+    ports:
+      - "9093:8080"
+    networks:
+      - onlineshop-network
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - onlineshop-network
+
 networks:
   onlineshop-network:
 
 volumes:
   postgres_data:
   pgadmin_data:
+  esdata:

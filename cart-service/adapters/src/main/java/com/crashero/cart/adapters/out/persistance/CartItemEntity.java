@@ -3,7 +3,7 @@ package com.crashero.cart.adapters.out.persistance;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Map;
+import java.util.List;
 
 @Entity
 @Table(name = "cart_items")
@@ -26,9 +26,8 @@ public class CartItemEntity {
     private CartEntity cart;
     private Double price;
 
-    @ElementCollection
-    @CollectionTable(name = "cart_item_configuration", joinColumns = @JoinColumn(name = "cart_item_id"))
-    @MapKeyColumn(name = "configuration_key")
-    @Column(name = "configuration_value")
-    private Map<String, String> configuration;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "cart_item_selected_configurations", joinColumns = @JoinColumn(name = "cart_item_id"))
+    private List<SelectedConfigurationEmbeddable> selectedConfigurations;
+    private Double additionalPrice;
 }

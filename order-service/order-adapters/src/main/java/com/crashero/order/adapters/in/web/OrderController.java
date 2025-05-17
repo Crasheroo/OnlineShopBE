@@ -11,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +24,7 @@ import java.util.List;
 public class OrderController {
     private final OrderService orderService;
     private final InvoiceService invoiceService;
+    private static final Logger log = LoggerFactory.getLogger(OrderController.class);
 
     @Operation(summary = "Create order by userId and OrderItems")
     @ApiResponse(responseCode = "200", description = "Order created",
@@ -29,6 +32,7 @@ public class OrderController {
                     schema = @Schema(implementation = Order.class))})
     @PostMapping("/{userId}")
     public Order createOrder(@PathVariable("userId") Long userId, @RequestBody List<OrderItem> items) {
+        log.info("Create order by userId={} and OrderItems={}", userId, items);
         return orderService.createOrder(userId, items);
     }
 
@@ -38,6 +42,7 @@ public class OrderController {
                     schema = @Schema(implementation = Order.class))})
     @GetMapping("/user/{userId}")
     public List<Order> getOrders(@PathVariable("userId") Long userId) {
+        log.info("Get orders by userId={}", userId);
         return orderService.getOrders(userId);
     }
 
@@ -47,6 +52,7 @@ public class OrderController {
                     schema = @Schema(implementation = Order.class))})
     @GetMapping("/{id}")
     public Order getOrderById(@PathVariable("id") Long id) {
+        log.info("Get order by id={}", id);
         return orderService.findOrderById(id);
     }
 
@@ -56,6 +62,7 @@ public class OrderController {
                     schema = @Schema(implementation = Invoice.class))})
     @GetMapping("/invoice/{userId}")
     public List<Invoice> getInvoicesByUserId(@PathVariable("userId") Long userId) {
+        log.info("Get invoices by userId={}", userId);
         return invoiceService.getInvoicesByUserId(userId);
     }
 
@@ -65,6 +72,7 @@ public class OrderController {
                     schema = @Schema(implementation = Invoice.class))})
     @GetMapping("/invoice/user/{userId}")
     public Invoice getInvoiceByUserId(@PathVariable("userId") Long userId) {
+        log.info("Get invoice by userId={}", userId);
         return invoiceService.getInvoiceById(userId);
     }
 }

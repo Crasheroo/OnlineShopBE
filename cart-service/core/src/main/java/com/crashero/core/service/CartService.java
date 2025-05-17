@@ -48,16 +48,14 @@ public class CartService {
                 .findFirst();
 
         existingItemOpt.ifPresentOrElse(
-                item -> {
-                    item.setQuantity(item.getQuantity() + command.getQuantity());
-                    item.setConfiguration(command.getConfiguration());
-                },
+                item -> item.setQuantity(item.getQuantity() + command.getQuantity()),
                 () -> items.add(CartItem.builder()
                         .productId(command.getProductId())
                         .productName(command.getProductName())
                         .quantity(command.getQuantity())
-                        .price(command.getPrice())
-                        .configuration(command.getConfiguration())
+                        .price(command.getPrice() + command.getAdditionalPrice())
+                        .selectedConfigurations(command.getSelectedConfigurations())
+                        .additionalPrice(command.getAdditionalPrice())
                         .build())
         );
 

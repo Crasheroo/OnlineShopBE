@@ -1,4 +1,4 @@
-package com.crashero.core.service;
+package com.crashero.core.port;
 
 import com.crashero.model.Product;
 import org.springframework.data.domain.Page;

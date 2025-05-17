@@ -1,10 +1,10 @@
 package com.crashero.core.service;
 
+import com.crashero.core.port.ProductConfigurationPort;
+import com.crashero.core.port.ProductPort;
 import com.crashero.model.PageableContentDTO;
 import com.crashero.model.Product;
-import com.crashero.model.ProductType;
-import com.crashero.model.configuration.ComputerConfiguration;
-import com.crashero.model.configuration.SmartphoneConfiguration;
+import com.crashero.model.ProductConfiguration;
 import com.crashero.model.exception.ProductException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,28 +13,16 @@ import java.util.List;
 
 public class ProductService {
     private final ProductPort productPort;
+    private final ProductConfigurationPort productConfigurationPort;
 
-    public ProductService(ProductPort productPort) {
+    public ProductService(ProductPort productPort, ProductConfigurationPort productConfigurationPort) {
         this.productPort = productPort;
+        this.productConfigurationPort = productConfigurationPort;
     }
 
-    public Object getProductConfiguration(Long id) {
+    public List<ProductConfiguration> getProductConfiguration(Long id) {
         Product product = getProductById(id);
-
-        if (product.getType() == ProductType.COMPUTER) {
-            return ComputerConfiguration.builder()
-                    .availableProcessors(List.of("Intel i5", "Intel i7", "AMD Ryzen 5", "AMD Ryzen 7"))
-                    .availableRamOptions(List.of(8, 16, 32))
-                    .build();
-        } else if (product.getType() == ProductType.SMARTPHONE) {
-            return SmartphoneConfiguration.builder()
-                    .availableColors(List.of("Black", "White", "Blue"))
-                    .batteryCapacities(List.of(3000, 4000, 5000))
-                    .availableAccessories(List.of("Earphones", "Case", "Screen Protector"))
-                    .build();
-        } else {
-            throw new ProductException("Product of type ELECTRONICS does not have configurable options.");
-        }
+        return product.getConfiguration();
     }
 
     public Product createProduct(Product product) {

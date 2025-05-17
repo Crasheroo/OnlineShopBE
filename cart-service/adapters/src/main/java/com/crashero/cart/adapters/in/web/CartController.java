@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +21,7 @@ import java.util.List;
 @RequestMapping("/carts")
 public class CartController {
     private final CartService cartService;
+    private static final Logger log = LoggerFactory.getLogger(CartController.class);
 
     @Operation(summary = "Get cart by cartId")
     @ApiResponse(responseCode = "200", description = "Cart found",
@@ -26,6 +29,7 @@ public class CartController {
                     schema = @Schema(implementation = Cart.class))})
     @GetMapping("/{cartId}")
     public Cart getCart(@PathVariable("cartId") Long cartId) {
+        log.info("Get cart by cartId: {}", cartId);
         return cartService.getCart(cartId);
     }
 
@@ -35,6 +39,7 @@ public class CartController {
                     schema = @Schema(implementation = Cart.class))})
     @GetMapping("/user/{userId}")
     public Cart getCartByUserId(@PathVariable("userId") Long userId) {
+        log.info("Get cart by userId: {}", userId);
         return cartService.getCartByUserId(userId);
     }
 
@@ -42,6 +47,7 @@ public class CartController {
     @ApiResponse(responseCode = "200", description = "Cart found and deleted")
     @DeleteMapping("/{cartId}")
     public void delete(@PathVariable("cartId") Long cartId) {
+        log.info("Delete cart by cartId: {}", cartId);
         cartService.deleteCart(cartId);
     }
 
@@ -49,6 +55,7 @@ public class CartController {
     @ApiResponse(responseCode = "200", description = "product and user found, product added")
     @PostMapping("/add-product")
     public void addProductToCartAndCreateCartWhenNotFound(@RequestBody AddProductToCart command) {
+        log.info("AddProductToCart command: {}", command);
         cartService.addProductToCart(command);
     }
 
@@ -56,6 +63,7 @@ public class CartController {
     @ApiResponse(responseCode = "200", description = "Carts found")
     @GetMapping
     public List<Cart> getCarts() {
+        log.info("Get carts");
         return cartService.getAllCarts();
     }
 }

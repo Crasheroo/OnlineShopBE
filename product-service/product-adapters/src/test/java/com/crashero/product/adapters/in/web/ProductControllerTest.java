@@ -1,9 +1,9 @@
 package com.crashero.product.adapters.in.web;
 
 import com.crashero.core.service.ProductService;
+import com.crashero.model.CreateProductCommand;
 import com.crashero.model.Product;
 import com.crashero.model.ProductType;
-import com.crashero.model.configuration.CreateProductCommand;
 import com.crashero.model.exception.ProductException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;

@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Table(name = "products")
 @Data
@@ -19,4 +21,6 @@ public class ProductEntity {
     private Double price;
     @Enumerated(EnumType.STRING)
     private ProductType type;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "product", fetch = FetchType.EAGER)
+    private List<ProductConfigurationEntity> configuration;
 }

@@ -11,9 +11,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AddProductToCartCommand {
-    private Long userId;
-    private Long productId;
-    private Integer quantity;
-    private List<Long> configurationIds;
+public class CreateProductCommand {
+    private String productName;
+    private Double price;
+    private ProductType type;
+    private List<ProductConfiguration> configuration;
 }

@@ -14,8 +14,8 @@ public interface CartClient {
     @PostMapping("/carts/add-product")
     void addProductToCart(AddProductToCart command);
 
-    @GetMapping("/carts/{cartId}")
-    Cart getCart(@PathVariable("cartId") Long cartId);
+    @GetMapping("/carts/user/{userId}")
+    Cart getCart(@PathVariable("userId") Long userId);
 
     @DeleteMapping("/carts/{cartId}")
     void deleteCart(@PathVariable("cartId") Long cartId);

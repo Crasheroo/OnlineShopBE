@@ -1,11 +1,15 @@
 package com.crashero.product.adapters.out.persistance;
 
-import com.crashero.core.service.ProductPort;
+import com.crashero.core.port.ProductPort;
 import com.crashero.model.Product;
+import com.crashero.model.ProductConfiguration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -17,7 +21,11 @@ public class ProductRepository implements ProductPort {
     public Product save(Product product) {
         ProductEntity entity = toEntity(product);
         ProductEntity saved = productRepository.save(entity);
-        return toDomain(saved);
+
+        ProductEntity reloaded = productRepository.findById(saved.getId())
+                .orElseThrow(() -> new IllegalStateException("Saved entity not found"));
+
+        return toDomain(reloaded);
     }
 
     @Override
@@ -42,11 +50,21 @@ public class ProductRepository implements ProductPort {
             return null;
         }
 
+        List<ProductConfigurationEntity> configEntities = product.getConfiguration() == null
+                ? Collections.emptyList()
+                : product.getConfiguration().stream()
+                .map(this::toEntity)
+                .toList();
+
         ProductEntity entity = new ProductEntity();
         entity.setId(product.getId());
         entity.setProductName(product.getProductName());
         entity.setPrice(product.getPrice());
         entity.setType(product.getType());
+        entity.setConfiguration(configEntities);
+
+        configEntities.forEach(config -> config.setProduct(entity));
+
         return entity;
     }
 
@@ -55,11 +73,44 @@ public class ProductRepository implements ProductPort {
             return null;
         }
 
+        List<ProductConfiguration> configurations = entity.getConfiguration() == null
+                ? Collections.emptyList()
+                : entity.getConfiguration().stream()
+                .map(this::toDomain)
+                .toList();
+
         return Product.builder()
                 .id(entity.getId())
                 .productName(entity.getProductName())
                 .price(entity.getPrice())
                 .type(entity.getType())
+                .configuration(configurations)
+                .build();
+    }
+
+    private ProductConfigurationEntity toEntity(ProductConfiguration config) {
+        if (config == null) {
+            return null;
+        }
+
+        ProductConfigurationEntity entity = new ProductConfigurationEntity();
+        entity.setId(config.getId());
+        entity.setConfigurationName(config.getConfigurationName());
+        entity.setConfigurationDescription(config.getConfigurationDescription());
+        entity.setAdditionalPrice(config.getAdditionalPrice());
+        return entity;
+    }
+
+    private ProductConfiguration toDomain(ProductConfigurationEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+
+        return ProductConfiguration.builder()
+                .id(entity.getId())
+                .configurationName(entity.getConfigurationName())
+                .configurationDescription(entity.getConfigurationDescription())
+                .additionalPrice(entity.getAdditionalPrice())
                 .build();
     }
 }

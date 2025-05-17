@@ -1,9 +1,9 @@
 package com.crashero.product.adapters.in.web;
 
 import com.crashero.core.service.ProductService;
+import com.crashero.model.CreateProductCommand;
 import com.crashero.model.PageableContentDTO;
 import com.crashero.model.Product;
-import com.crashero.model.configuration.CreateProductCommand;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -11,6 +11,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/products")
 public class ProductController {
     private final ProductService productService;
+    private static final Logger log = LoggerFactory.getLogger(ProductController.class);
 
     @Operation(summary = "Create product")
     @ApiResponse(responseCode = "200", description = "Product created",
@@ -32,7 +35,9 @@ public class ProductController {
                 .productName(command.getProductName())
                 .price(command.getPrice())
                 .type(command.getType())
+                .configuration(command.getConfiguration())
                 .build();
+        log.info("Creating product: {}", command);
         return productService.createProduct(product);
     }
 
@@ -45,6 +50,7 @@ public class ProductController {
     })
     @GetMapping("/{id}")
     public Product getProduct(@PathVariable("id") Long id) {
+        log.info("Get product by id: {}", id);
         return productService.getProductById(id);
     }
 
@@ -52,18 +58,21 @@ public class ProductController {
     @ApiResponse(responseCode = "200", description = "Product found")
     @DeleteMapping("/{id}")
     public void deleteProduct(@PathVariable("id") Long id) {
+        log.info("Delete product by id: {}", id);
         productService.deleteProduct(id);
     }
 
     @Operation(summary = "Get all products")
     @GetMapping
     public PageableContentDTO<Product> getAllProducts(@ParameterObject Pageable pageable) {
+        log.info("Get all products");
         return productService.getAllProducts(pageable);
     }
 
     @Operation(summary = "Get product configuration by it's productId")
     @GetMapping("/{id}/configuration")
     public Object getProductConfiguration(@PathVariable("id") Long id) {
+        log.info("Get product configuration by id: {}", id);
         return productService.getProductConfiguration(id);
     }
 
@@ -73,6 +82,7 @@ public class ProductController {
                     schema = @Schema(implementation = Product.class))})
     @PatchMapping("/{productId}/update")
     public Product updateProduct(@PathVariable("productId") Long productId, @RequestBody Product product) {
+        log.info("Update product by id: {}", productId);
         return productService.updateProduct(productId, product);
     }
 }

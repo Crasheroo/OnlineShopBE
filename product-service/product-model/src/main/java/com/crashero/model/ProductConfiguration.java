@@ -5,12 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Map;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductConfigurationSelection {
-    private Map<String, String> options;
+public class ProductConfiguration {
+    private Long id;
+    private String configurationName;
+    private String configurationDescription;
+    private Double additionalPrice;
 }

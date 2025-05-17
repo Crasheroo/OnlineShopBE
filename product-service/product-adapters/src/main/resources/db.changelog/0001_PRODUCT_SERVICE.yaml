@@ -1,0 +1,58 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001
+      author: Crasheroo
+      changes:
+        - createTable:
+            tableName: products
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: product_name
+                  type: VARCHAR(255)
+              - column:
+                  name: price
+                  type: DOUBLE
+              - column:
+                  name: type
+                  type: VARCHAR(50)
+
+  - changeSet:
+      id: 002
+      author: Crasheroo
+      changes:
+        - createTable:
+            tableName: product_configurations
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: configuration_name
+                  type: VARCHAR(255)
+              - column:
+                  name: configuration_description
+                  type: VARCHAR(1024)
+              - column:
+                  name: additional_price
+                  type: DOUBLE
+              - column:
+                  name: product_id
+                  type: BIGINT
+        - addForeignKeyConstraint:
+            baseTableName: product_configurations
+            baseColumnNames: product_id
+            constraintName: fk_product_configurations_products
+            referencedTableName: products
+            referencedColumnNames: id
+            onDelete: CASCADE

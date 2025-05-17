@@ -3,6 +3,7 @@ package com.crashero.cart.adapters.out.persistance;
 import com.crashero.core.service.CartPort;
 import com.crashero.model.Cart;
 import com.crashero.model.CartItem;
+import com.crashero.model.SelectedConfiguration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -85,6 +86,21 @@ public class CartRepository implements CartPort {
         entity.setProductName(item.getProductName());
         entity.setQuantity(item.getQuantity());
         entity.setPrice(item.getPrice());
+        entity.setAdditionalPrice(item.getAdditionalPrice());
+
+        if (item.getSelectedConfigurations() != null) {
+            List<SelectedConfigurationEmbeddable> selectedConfigs = item.getSelectedConfigurations().stream()
+                    .map(cfg -> SelectedConfigurationEmbeddable.builder()
+                            .id(cfg.getId())
+                            .configurationName(cfg.getConfigurationName())
+                            .configurationDescription(cfg.getConfigurationDescription())
+                            .build())
+                    .toList();
+            entity.setSelectedConfigurations(selectedConfigs);
+        } else {
+            entity.setSelectedConfigurations(null);
+        }
+
         return entity;
     }
 
@@ -119,9 +135,24 @@ public class CartRepository implements CartPort {
         CartItem item = new CartItem();
         item.setId(entity.getId());
         item.setProductId(entity.getProductId());
-        item.setPrice(entity.getPrice());
         item.setProductName(entity.getProductName());
         item.setQuantity(entity.getQuantity());
+        item.setPrice(entity.getPrice());
+        item.setAdditionalPrice(entity.getAdditionalPrice());
+
+        if (entity.getSelectedConfigurations() != null) {
+            List<SelectedConfiguration> selectedConfigs = entity.getSelectedConfigurations().stream()
+                    .map(cfgEmb -> SelectedConfiguration.builder()
+                            .id(cfgEmb.getId())
+                            .configurationName(cfgEmb.getConfigurationName())
+                            .configurationDescription(cfgEmb.getConfigurationDescription())
+                            .build())
+                    .toList();
+            item.setSelectedConfigurations(selectedConfigs);
+        } else {
+            item.setSelectedConfigurations(null);
+        }
+
         return item;
     }
 }
