@@ -79,8 +79,6 @@ public class UserService {
                 })
                 .toList();
 
-        System.out.println("Order items: " + orderItems);
-
         Order order = orderClient.createOrder(userId, orderItems);
 
         cartClient.deleteCart(cartId);

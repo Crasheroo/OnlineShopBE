@@ -5,9 +5,9 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-      PGADMIN_LISTEN_PORT: 1234
+      PGADMIN_LISTEN_PORT: ${PGADMIN_PORT}
     ports:
-      - "1234:1234"
+      - "${PGADMIN_PORT}:${PGADMIN_PORT}"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     networks:
@@ -21,7 +21,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -32,15 +32,15 @@ services:
     image: cart-service:latest
     container_name: cart-service
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://onlineshop-db:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://onlineshop-db:${POSTGRES_PORT}/${POSTGRES_DB}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
       - SPRING_JPA_HIBERNATE_DDL_AUTO=${SPRING_JPA_HIBERNATE_DDL_AUTO}
       - PRODUCT_SERVICE_URL=${PRODUCT_SERVICE_URL}
-      - SERVER_PORT=8080
+      - SERVER_PORT=${CART_SERVICE_PORT}
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
     ports:
-      - "8080:8080"
+      - "${CART_SERVICE_PORT}:${CART_SERVICE_PORT}"
     depends_on:
       - postgres
       - product-service
@@ -51,14 +51,14 @@ services:
     image: product-service:latest
     container_name: product-service
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://onlineshop-db:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://onlineshop-db:${POSTGRES_PORT}/${POSTGRES_DB}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
       - SPRING_JPA_HIBERNATE_DDL_AUTO=${SPRING_JPA_HIBERNATE_DDL_AUTO}
-      - SERVER_PORT=8081
+      - SERVER_PORT=${PRODUCT_SERVICE_PORT}
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
     ports:
-      - "8081:8081"
+      - "${PRODUCT_SERVICE_PORT}:${PRODUCT_SERVICE_PORT}"
     depends_on:
       - postgres
     networks:
@@ -68,16 +68,16 @@ services:
     image: order-service:latest
     container_name: order-service
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://onlineshop-db:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://onlineshop-db:${POSTGRES_PORT}/${POSTGRES_DB}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
       - SPRING_JPA_HIBERNATE_DDL_AUTO=${SPRING_JPA_HIBERNATE_DDL_AUTO}
       - PRODUCT_SERVICE_URL=${PRODUCT_SERVICE_URL}
       - CART_SERVICE_URL=${CART_SERVICE_URL}
-      - SERVER_PORT=8081
+      - SERVER_PORT=${ORDER_SERVICE_PORT}
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
     ports:
-      - "8082:8082"
+      - "${ORDER_SERVICE_PORT}:${ORDER_SERVICE_PORT}"
     depends_on:
       - postgres
       - product-service
@@ -92,11 +92,11 @@ services:
       - PRODUCT_SERVICE_URL=${PRODUCT_SERVICE_URL}
       - CART_SERVICE_URL=${CART_SERVICE_URL}
       - ORDER_SERVICE_URL=${ORDER_SERVICE_URL}
-      - SERVER_PORT=8083
+      - SERVER_PORT=${USER_SERVICE_PORT}
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
-      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:${KAFKA_PORT}
     ports:
-      - "8083:8083"
+      - "${USER_SERVICE_PORT}:${USER_SERVICE_PORT}"
     depends_on:
       - cart-service
       - product-service
@@ -111,9 +111,8 @@ services:
       - discovery.type=single-node
       - xpack.security.enabled=false
       - xpack.monitoring.collection.enabled=true
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
     ports:
-      - "9200:9200"
+      - "${ELASTICSEARCH_PORT}:${ELASTICSEARCH_PORT}"
     volumes:
       - esdata:/usr/share/elasticsearch/data
     networks:
@@ -123,9 +122,9 @@ services:
     image: docker.elastic.co/kibana/kibana:8.13.0
     container_name: kibana
     ports:
-      - "5601:5601"
+      - "${KIBANA_PORT}:${KIBANA_PORT}"
     environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:${ELASTICSEARCH_PORT}
       - xpack.security.enabled=false
     networks:
       - onlineshop-network
@@ -136,7 +135,7 @@ services:
     environment:
       - LS_JAVA_OPTS=-Xms256m -Xmx256m
     ports:
-      - "5050:5050"
+      - "${LOGSTASH_PORT}:${LOGSTASH_PORT}"
     volumes:
       - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     networks:
@@ -148,9 +147,9 @@ services:
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     ports:
-      - "2181:2181"
+      - "${ZOOKEEPER_PORT}:${ZOOKEEPER_PORT}"
     environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_PORT}
       ZOOKEEPER_TICK_TIME: 2000
     networks:
       - onlineshop-network
@@ -164,22 +163,22 @@ services:
           connections:
             docker-kafka-server:
               properties:
-                bootstrap.servers: "kafka:9092"
+                bootstrap.servers: "kafka:${KAFKA_PORT}"
     ports:
-      - "9093:8080"
+      - "${AKHQ_PORT}:8080"
     networks:
       - onlineshop-network
 
   kafka:
     image: confluentinc/cp-kafka:latest
     ports:
-      - "9092:9092"
+      - "${KAFKA_PORT}:${KAFKA_PORT}"
     depends_on:
       - zookeeper
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:${ZOOKEEPER_PORT}
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:${KAFKA_PORT}
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - onlineshop-network
