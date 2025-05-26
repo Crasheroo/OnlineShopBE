@@ -4,8 +4,8 @@ WORKDIR /app
 
 EXPOSE 8083
 
-COPY /target/user-service-0.0.1-SNAPSHOT.jar app/user-service-0.0.1-SNAPSHOT.jar
+COPY user-adapters/target/user-adapters-0.0.1-SNAPSHOT.jar app/user-adapters-0.0.1-SNAPSHOT.jar
 
 RUN rm -rf /var/cache/apk/*
 
-ENTRYPOINT ["java", "-jar", "app/user-service-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "app/user-adapters-0.0.1-SNAPSHOT.jar"]
