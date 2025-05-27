@@ -7,25 +7,24 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Component
 public class ProductConfigurationRepository implements ProductConfigurationPort {
-
+    private final ProductMapper productMapper;
     private final SpringDataProductConfigurationRepository jpaRepository;
 
     @Override
     public ProductConfiguration save(ProductConfiguration productConfiguration) {
-        ProductConfigurationEntity entity = toEntity(productConfiguration);
+        ProductConfigurationEntity entity = productMapper.toEntity(productConfiguration);
         ProductConfigurationEntity saved = jpaRepository.save(entity);
-        return toDto(saved);
+        return productMapper.toDomain(saved);
     }
 
     @Override
     public Optional<ProductConfiguration> findById(Long id) {
         return jpaRepository.findById(id)
-                .map(this::toDto);
+                .map(productMapper::toDomain);
     }
 
     @Override
@@ -36,29 +35,29 @@ public class ProductConfigurationRepository implements ProductConfigurationPort 
     @Override
     public List<ProductConfiguration> findAll() {
         return jpaRepository.findAll().stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
+                .map(productMapper::toDomain)
+                .toList();
     }
 
-    private ProductConfigurationEntity toEntity(ProductConfiguration config) {
-        if (config == null) return null;
-
-        ProductConfigurationEntity entity = new ProductConfigurationEntity();
-        entity.setId(config.getId());
-        entity.setConfigurationName(config.getConfigurationName());
-        entity.setConfigurationDescription(config.getConfigurationDescription());
-        entity.setAdditionalPrice(config.getAdditionalPrice());
-        return entity;
-    }
-
-    private ProductConfiguration toDto(ProductConfigurationEntity entity) {
-        if (entity == null) return null;
-
-        return ProductConfiguration.builder()
-                .id(entity.getId())
-                .configurationName(entity.getConfigurationName())
-                .configurationDescription(entity.getConfigurationDescription())
-                .additionalPrice(entity.getAdditionalPrice())
-                .build();
-    }
+//    private ProductConfigurationEntity toEntity(ProductConfiguration config) {
+//        if (config == null) return null;
+//
+//        ProductConfigurationEntity entity = new ProductConfigurationEntity();
+//        entity.setId(config.getId());
+//        entity.setConfigurationName(config.getConfigurationName());
+//        entity.setConfigurationDescription(config.getConfigurationDescription());
+//        entity.setAdditionalPrice(config.getAdditionalPrice());
+//        return entity;
+//    }
+//
+//    private ProductConfiguration toDto(ProductConfigurationEntity entity) {
+//        if (entity == null) return null;
+//
+//        return ProductConfiguration.builder()
+//                .id(entity.getId())
+//                .configurationName(entity.getConfigurationName())
+//                .configurationDescription(entity.getConfigurationDescription())
+//                .additionalPrice(entity.getAdditionalPrice())
+//                .build();
+//    }
 }
