@@ -1,0 +1,153 @@
+services:
+  pgadmin:
+    image: elestio/pgadmin:latest
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_LISTEN_PORT: ${PGADMIN_PORT}
+    ports:
+      - "${PGADMIN_PORT}:${PGADMIN_PORT}"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - onlineshop-network
+
+  postgres:
+    image: postgres:latest
+    container_name: onlineshop-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - onlineshop-network
+    restart: always
+
+  cart-service:
+    image: cart-service:latest
+    container_name: cart-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://onlineshop-db:${POSTGRES_PORT}/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=${SPRING_JPA_HIBERNATE_DDL_AUTO}
+      - PRODUCT_SERVICE_URL=${PRODUCT_SERVICE_URL}
+      - SERVER_PORT=${CART_SERVICE_PORT}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+    ports:
+      - "${CART_SERVICE_PORT}:${CART_SERVICE_PORT}"
+    depends_on:
+      - postgres
+      - product-service
+    networks:
+      - onlineshop-network
+
+  product-service:
+    image: product-service:latest
+    container_name: product-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://onlineshop-db:${POSTGRES_PORT}/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=${SPRING_JPA_HIBERNATE_DDL_AUTO}
+      - SERVER_PORT=${PRODUCT_SERVICE_PORT}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+    ports:
+      - "${PRODUCT_SERVICE_PORT}:${PRODUCT_SERVICE_PORT}"
+    depends_on:
+      - postgres
+    networks:
+      - onlineshop-network
+
+  order-service:
+    image: order-service:latest
+    container_name: order-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://onlineshop-db:${POSTGRES_PORT}/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=${SPRING_JPA_HIBERNATE_DDL_AUTO}
+      - PRODUCT_SERVICE_URL=${PRODUCT_SERVICE_URL}
+      - CART_SERVICE_URL=${CART_SERVICE_URL}
+      - SERVER_PORT=${ORDER_SERVICE_PORT}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+    ports:
+      - "${ORDER_SERVICE_PORT}:${ORDER_SERVICE_PORT}"
+    depends_on:
+      - postgres
+      - product-service
+      - cart-service
+    networks:
+      - onlineshop-network
+
+  user-service:
+    image: user-service:latest
+    container_name: user-service
+    environment:
+      - PRODUCT_SERVICE_URL=${PRODUCT_SERVICE_URL}
+      - CART_SERVICE_URL=${CART_SERVICE_URL}
+      - ORDER_SERVICE_URL=${ORDER_SERVICE_URL}
+      - SERVER_PORT=${USER_SERVICE_PORT}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:${KAFKA_PORT}
+    ports:
+      - "${USER_SERVICE_PORT}:${USER_SERVICE_PORT}"
+    depends_on:
+      - cart-service
+      - product-service
+      - order-service
+    networks:
+      - onlineshop-network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.monitoring.collection.enabled=true
+    ports:
+      - "${ELASTICSEARCH_PORT}:${ELASTICSEARCH_PORT}"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - onlineshop-network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.0
+    container_name: kibana
+    ports:
+      - "${KIBANA_PORT}:${KIBANA_PORT}"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:${ELASTICSEARCH_PORT}
+      - xpack.security.enabled=false
+    networks:
+      - onlineshop-network
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.13.0
+    container_name: logstash
+    environment:
+      - LS_JAVA_OPTS=-Xms256m -Xmx256m
+    ports:
+      - "${LOGSTASH_PORT}:${LOGSTASH_PORT}"
+    volumes:
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    networks:
+      - onlineshop-network
+    depends_on:
+      - elasticsearch
+
+
+networks:
+  onlineshop-network:
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+  esdata:
