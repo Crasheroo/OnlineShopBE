@@ -1,4 +1,4 @@
-package com.crashero.user.adapters.config;
+package com.crashero.user.adapters.config.fallback;
 
 import com.crashero.model.AddProductToCart;
 import com.crashero.model.Cart;

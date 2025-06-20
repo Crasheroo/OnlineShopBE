@@ -4,7 +4,7 @@ import com.crashero.model.Invoice;
 import com.crashero.model.Order;
 import com.crashero.model.OrderItem;
 import com.crashero.user.adapters.config.FeignConfig;
-import com.crashero.user.adapters.config.OrderClientFallback;
+import com.crashero.user.adapters.config.fallback.OrderClientFallback;
 import com.crashero.user.core.port.out.OrderPort;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;

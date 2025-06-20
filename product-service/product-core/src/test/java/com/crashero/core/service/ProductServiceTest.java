@@ -1,7 +1,7 @@
 package com.crashero.core.service;
 
-import com.crashero.core.port.ProductConfigurationPort;
 import com.crashero.core.port.ProductPort;
+import com.crashero.core.service.impl.ProductServiceImpl;
 import com.crashero.model.Product;
 import com.crashero.model.ProductType;
 import com.crashero.model.exception.ProductException;
@@ -18,14 +18,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class ProductServiceTest {
-    private ProductService productService;
+    private ProductServiceImpl productService;
     private ProductPort productPort;
-    private ProductConfigurationPort productConfigurationPort;
 
     @BeforeEach
     public void setUp() {
         productPort = mock(ProductPort.class);
-        productService = new ProductService(productPort, productConfigurationPort);
+        productService = new ProductServiceImpl(productPort);
     }
 
     @Test

@@ -4,7 +4,7 @@ import com.crashero.model.CreateProductCommand;
 import com.crashero.model.PageableContentDTO;
 import com.crashero.model.Product;
 import com.crashero.user.adapters.config.FeignConfig;
-import com.crashero.user.adapters.config.ProductClientFallback;
+import com.crashero.user.adapters.config.fallback.ProductClientFallback;
 import com.crashero.user.core.port.out.ProductPort;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.domain.Pageable;

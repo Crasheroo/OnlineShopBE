@@ -1,5 +1,6 @@
 package com.crashero.core.service;
 
+import com.crashero.core.service.impl.InvoiceServiceImpl;
 import com.crashero.model.Invoice;
 import com.crashero.model.Order;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,12 +13,12 @@ import static org.mockito.Mockito.*;
 class InvoiceServiceTest {
 
     private InvoicePort invoicePort;
-    private InvoiceService invoiceService;
+    private InvoiceServiceImpl invoiceService;
 
     @BeforeEach
     void setUp() {
         invoicePort = mock(InvoicePort.class);
-        invoiceService = new InvoiceService(invoicePort);
+        invoiceService = new InvoiceServiceImpl(invoicePort);
     }
 
     @Test

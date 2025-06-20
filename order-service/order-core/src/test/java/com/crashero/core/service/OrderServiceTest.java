@@ -1,5 +1,6 @@
 package com.crashero.core.service;
 
+import com.crashero.core.service.impl.OrderServiceImpl;
 import com.crashero.model.Order;
 import com.crashero.model.OrderItem;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,13 +15,13 @@ class OrderServiceTest {
 
     private OrderPort orderPort;
     private InvoiceService invoiceService;
-    private OrderService orderService;
+    private OrderServiceImpl orderService;
 
     @BeforeEach
     void setUp() {
         orderPort = mock(OrderPort.class);
         invoiceService = mock(InvoiceService.class);
-        orderService = new OrderService(orderPort, invoiceService);
+        orderService = new OrderServiceImpl(orderPort, invoiceService);
     }
 
     @Test
@@ -74,7 +75,6 @@ class OrderServiceTest {
         } catch (Exception e) {
             // then
             verify(orderPort).findById(99L);
-            // brak assertów – tylko interakcje
         }
     }
 }
