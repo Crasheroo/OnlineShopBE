@@ -2,6 +2,7 @@ package com.crashero.cart.adapters.config;
 
 import com.crashero.core.service.CartPort;
 import com.crashero.core.service.CartService;
+import com.crashero.core.service.impl.CartServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -9,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 public class BeanConfig {
 
     @Bean
-    public CartService cartService(CartPort cartPort) {
-        return new CartService(cartPort);
+    public CartServiceImpl cartService(CartPort cartPort) {
+        return new CartServiceImpl(cartPort);
     }
 }

@@ -1,30 +1,29 @@
-package com.crashero.user.core;
+package com.crashero.user.core.service.impl;
 
 import com.crashero.model.*;
 import com.crashero.model.exception.CartException;
+import com.crashero.user.core.service.UserService;
 import com.crashero.user.core.port.out.CartPort;
 import com.crashero.user.core.port.out.OrderPort;
 import com.crashero.user.core.port.out.ProductPort;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
 
-public class UserService {
+@RequiredArgsConstructor
+public class UserServiceImpl implements UserService {
     private final ProductPort productPort;
     private final CartPort cartPort;
     private final OrderPort orderPort;
 
-    public UserService(ProductPort productPort, CartPort cartPort, OrderPort orderPort) {
-        this.productPort = productPort;
-        this.cartPort = cartPort;
-        this.orderPort = orderPort;
-    }
-
+    @Override
     public PageableContentDTO<Product> browseProducts(Pageable pageable) {
         return productPort.getProducts(pageable);
     }
 
+    @Override
     public void addToCart(AddProductToCartCommand command) {
         Product product = productPort.getProductById(command.getProductId());
         List<ProductConfiguration> selectedConfigs = getSelectedConfigurations(product, command);
@@ -44,35 +43,45 @@ public class UserService {
         cartPort.addProductToCart(cartCommand);
     }
 
-
+    @Override
     public Order checkout(Long cartId, Long userId) {
         Cart cart = cartPort.getCart(userId);
         validateCart(userId, cart);
+
+        if (!cart.getId().equals(cartId)) {
+            throw new CartException("Provided cartId does not match user's cart");
+        }
 
         List<OrderItem> orderItems = getItems(cart);
 
         Order order = orderPort.createOrder(userId, orderItems);
 
         cartPort.deleteCart(cartId);
+
         return order;
     }
 
+    @Override
     public List<Order> getOrderHistory(Long userId) {
         return orderPort.getOrdersByUserId(userId);
     }
 
+    @Override
     public Cart getCartByUserId(Long userId) {
         return cartPort.getCart(userId);
     }
 
+    @Override
     public Object getProductConfiguration(Long id) {
         return productPort.getProductConfiguration(id);
     }
 
+    @Override
     public Product getProductById(Long productId) {
         return productPort.getProductById(productId);
     }
 
+    @Override
     public List<Invoice> getInvoicesByUserId(Long userId) {
         return orderPort.getInvoicesByUserId(userId);
     }
@@ -124,6 +133,7 @@ public class UserService {
                     double totalPrice = (basePrice + additional) * quantity;
 
                     return OrderItem.builder()
+                            .id(null)
                             .productName(item.getProductName())
                             .quantity(quantity)
                             .price(totalPrice)

@@ -1,5 +1,6 @@
 package com.crashero.user.adapters.config;
 
+import com.crashero.model.CreateProductCommand;
 import com.crashero.model.PageableContentDTO;
 import com.crashero.model.Product;
 import com.crashero.user.adapters.out.ProductClient;
@@ -28,5 +29,23 @@ public class ProductClientFallback implements ProductClient {
     public Product getProductById(Long id) {
         log.error("getProductById called");
         throw new RuntimeException("Falling back to getProductById");
+    }
+
+    @Override
+    public Product createProduct(CreateProductCommand command) {
+        log.error("createProduct called");
+        throw new RuntimeException("Falling back to createProduct");
+    }
+
+    @Override
+    public void deleteProduct(Long id) {
+        log.error("deleteProduct called");
+        throw new RuntimeException("Falling back to deleteProduct");
+    }
+
+    @Override
+    public Product updateProduct(Long productId, Product product) {
+        log.error("updateProduct called");
+        throw new RuntimeException("Falling back to updateProduct");
     }
 }

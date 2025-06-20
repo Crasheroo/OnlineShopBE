@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -16,31 +17,36 @@ public class ProductRepository implements ProductPort {
     private final ProductMapper productMapper;
 
     @Override
+    @Transactional
     public Product save(Product product) {
         ProductEntity entity = productMapper.toEntity(product);
+
+        if (entity.getConfiguration() != null) {
+            entity.getConfiguration().forEach(config -> config.setProduct(entity));
+        }
+
         ProductEntity saved = productRepository.save(entity);
-
-        ProductEntity reloaded = productRepository.findById(saved.getId())
-                .orElseThrow(() -> new IllegalStateException("Saved entity not found"));
-
-        return productMapper.toDomain(reloaded);
+        return productMapper.toDomain(saved);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Product> findById(Long id) {
         return productRepository.findById(id)
                 .map(productMapper::toDomain);
     }
 
     @Override
+    @Transactional
     public void deleteById(Long id) {
         productRepository.deleteById(id);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Product> findAll(Pageable pageable) {
-        Page<ProductEntity> entities = productRepository.findAll(pageable);
-        return entities.map(productMapper::toDomain);
+        return productRepository.findAll(pageable)
+                .map(productMapper::toDomain);
     }
 
 //    private ProductEntity toEntity(Product product) {

@@ -1,7 +1,7 @@
 package com.crashero.user.adapters.in;
 
 import com.crashero.model.*;
-import com.crashero.user.core.UserService;
+import com.crashero.user.core.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -99,5 +99,4 @@ public class UserController {
         log.info("Received request to retrieve invoice for userId={}", userId);
         return userService.getInvoicesByUserId(userId);
     }
-
 }
